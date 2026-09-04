@@ -77,7 +77,12 @@ describe("createExportedGraph", () => {
       sourceVersion: appVersion,
     } satisfies ExportedGraphFile["meta"];
 
-    const graph = createExportedGraph(vertexIds, edgeIds, connection);
+    const graph = createExportedGraph(
+      vertexIds,
+      edgeIds,
+      connection,
+      DEFAULT_GRAPH_LAYOUT,
+    );
 
     expect(graph.meta).toEqual(expectedMeta);
     expect(graph.data.connection).toEqual(expectedConnection);
@@ -93,7 +98,7 @@ describe("createExportedGraph", () => {
     // stay on the wire as the decimal string.
     const connection = createRandomConnectionWithId();
 
-    const graph = createExportedGraph([], [], connection);
+    const graph = createExportedGraph([], [], connection, DEFAULT_GRAPH_LAYOUT);
 
     expect(graph.meta.version).toBe("1.0");
   });
@@ -102,18 +107,23 @@ describe("createExportedGraph", () => {
     const connection = createRandomConnectionWithId();
     const expectedConnection = createExportedConnection(connection);
 
-    const graph = createExportedGraph([], [], connection);
+    const graph = createExportedGraph([], [], connection, DEFAULT_GRAPH_LAYOUT);
 
     expect(graph.data.connection).toEqual(expectedConnection);
     expect(graph.data.vertices).toEqual([]);
     expect(graph.data.edges).toEqual([]);
+    expect(graph.data.layout).toBe(DEFAULT_GRAPH_LAYOUT);
   });
 
   it("includes the selected layout in the export payload", () => {
+    const vertexIds = createArray(2, () => createRandomVertexId());
+    const edgeIds = createArray(2, () => createRandomEdgeId());
+    const connection = createRandomConnectionWithId();
+
     const graph = createExportedGraph(
-      [],
-      [],
-      createRandomConnectionWithId(),
+      vertexIds,
+      edgeIds,
+      connection,
       "DAGRE_TB",
     );
 
@@ -125,7 +135,12 @@ describe("createExportedGraph", () => {
     const edgeIds = createArray(2, () => createRandomEdgeId());
     const connection = createRandomConnectionWithId();
 
-    const graph = createExportedGraph(vertexIds, edgeIds, connection);
+    const graph = createExportedGraph(
+      vertexIds,
+      edgeIds,
+      connection,
+      DEFAULT_GRAPH_LAYOUT,
+    );
 
     expect(graph.meta.timestamp).toEqual(timestamp.toISOString());
   });
@@ -135,7 +150,12 @@ describe("createExportedGraph", () => {
     const edgeIds = createArray(2, () => createRandomEdgeId());
     const connection = createRandomConnectionWithId();
 
-    const graph = createExportedGraph(vertexIds, edgeIds, connection);
+    const graph = createExportedGraph(
+      vertexIds,
+      edgeIds,
+      connection,
+      DEFAULT_GRAPH_LAYOUT,
+    );
 
     expect(graph.meta.sourceVersion).toBe(appVersion);
   });
@@ -145,7 +165,12 @@ describe("createExportedGraph", () => {
     const edgeIds = createArray(2, () => createRandomEdgeId());
     const connection = createRandomConnectionWithId();
 
-    const graph = createExportedGraph(vertexIds, edgeIds, connection);
+    const graph = createExportedGraph(
+      vertexIds,
+      edgeIds,
+      connection,
+      DEFAULT_GRAPH_LAYOUT,
+    );
 
     expect(graph.meta.kind).toBe("graph-export");
   });
@@ -155,7 +180,12 @@ describe("createExportedGraph", () => {
     const edgeIds = createArray(2, () => createRandomEdgeId());
     const connection = createRandomConnectionWithId();
 
-    const graph = createExportedGraph(vertexIds, edgeIds, connection);
+    const graph = createExportedGraph(
+      vertexIds,
+      edgeIds,
+      connection,
+      DEFAULT_GRAPH_LAYOUT,
+    );
 
     expect(graph.meta.source).toBe("Graph Explorer");
   });
@@ -227,12 +257,92 @@ describe("parseExportedGraph", () => {
     expect(parsed).toEqual(expected);
   });
 
+  it("round-trips exact arrangement positions and viewport with typed IDs", async () => {
+    const exportedGraph = createRandomExportedGraph();
+    exportedGraph.data.vertices = [1, "1"];
+    exportedGraph.data.arrangement = {
+      positions: [
+        { id: 1, x: 10.25, y: -20.5 },
+        { id: "1", x: 30.75, y: 40.125 },
+      ],
+      viewport: { pan: { x: -50.5, y: 60.25 }, zoom: 1.75 },
+    };
+
+    const parsed = await parseExportedGraph(toGraphFileBlob(exportedGraph));
+
+    expect(parsed.arrangement).toStrictEqual(exportedGraph.data.arrangement);
+  });
+
+  it.each([
+    ["position x", { positions: [{ id: 1, x: Number.NaN, y: 0 }] }],
+    ["position y", { positions: [{ id: 1, x: 0, y: Infinity }] }],
+    [
+      "pan x",
+      { positions: [], viewport: { pan: { x: -Infinity, y: 0 }, zoom: 1 } },
+    ],
+    [
+      "pan y",
+      { positions: [], viewport: { pan: { x: 0, y: Number.NaN }, zoom: 1 } },
+    ],
+    [
+      "zoom",
+      { positions: [], viewport: { pan: { x: 0, y: 0 }, zoom: Infinity } },
+    ],
+  ])("rejects non-finite %s", async (_name, arrangement) => {
+    const exportedGraph = createRandomExportedGraph();
+    exportedGraph.data.arrangement = arrangement;
+
+    await expect(
+      parseExportedGraph(toGraphFileBlob(exportedGraph)),
+    ).rejects.toThrow();
+  });
+
+  it("rejects duplicate same-typed arrangement IDs", async () => {
+    const exportedGraph = createRandomExportedGraph();
+    exportedGraph.data.arrangement = {
+      positions: [
+        { id: 1, x: 0, y: 0 },
+        { id: 1, x: 1, y: 1 },
+      ],
+    };
+
+    await expect(
+      parseExportedGraph(toGraphFileBlob(exportedGraph)),
+    ).rejects.toThrow();
+  });
+
+  it("accepts numeric and string arrangement IDs with the same value", async () => {
+    const exportedGraph = createRandomExportedGraph();
+    exportedGraph.data.arrangement = {
+      positions: [
+        { id: 1, x: 0, y: 0 },
+        { id: "1", x: 1, y: 1 },
+      ],
+    };
+
+    await expect(
+      parseExportedGraph(toGraphFileBlob(exportedGraph)),
+    ).resolves.toMatchObject({
+      arrangement: exportedGraph.data.arrangement,
+    });
+  });
+
+  it("parses a legacy export with no arrangement", async () => {
+    const exportedGraph = createRandomExportedGraph();
+    delete exportedGraph.data.arrangement;
+
+    const parsed = await parseExportedGraph(toGraphFileBlob(exportedGraph));
+
+    expect(parsed.arrangement).toBeUndefined();
+  });
+
   it("parses a legacy export with no layout", async () => {
     const exportedGraph = createRandomExportedGraph();
     const legacy = {
       ...exportedGraph,
-      data: { ...exportedGraph.data, layout: undefined },
+      data: { ...exportedGraph.data },
     };
+    delete legacy.data.layout;
 
     const parsed = await parseExportedGraph(toGraphFileBlob(legacy));
 
@@ -285,6 +395,9 @@ describe("parseExportedGraph", () => {
     const maliciousEdgeId = `${edgeName}${suffix}`;
     exportedGraph.data.vertices.push(maliciousVertexId);
     exportedGraph.data.edges.push(maliciousEdgeId);
+    exportedGraph.data.arrangement = {
+      positions: [{ id: maliciousVertexId, x: 10, y: 20 }],
+    };
 
     const parsed = await parseExportedGraph(toGraphFileBlob(exportedGraph));
 
@@ -296,6 +409,9 @@ describe("parseExportedGraph", () => {
     expect(
       parsed.edges.has(`${edgeName}${escapedSuffix}` as EdgeId),
     ).toBeTruthy();
+    expect(parsed.arrangement?.positions).toStrictEqual([
+      { id: `${vertexName}${escapedSuffix}`, x: 10, y: 20 },
+    ]);
   });
 
   it("should trim leading and trailing whitespace", async () => {
@@ -304,6 +420,9 @@ describe("parseExportedGraph", () => {
     const edgeIdWithWhitespace = `  ${createRandomName("EdgeId")} `;
     exportedGraph.data.vertices.push(vertexIdWithWhitespace);
     exportedGraph.data.edges.push(edgeIdWithWhitespace);
+    exportedGraph.data.arrangement = {
+      positions: [{ id: vertexIdWithWhitespace, x: 10, y: 20 }],
+    };
 
     const parsed = await parseExportedGraph(toGraphFileBlob(exportedGraph));
 
@@ -315,6 +434,9 @@ describe("parseExportedGraph", () => {
     expect(
       parsed.edges.has(edgeIdWithWhitespace.trim() as EdgeId),
     ).toBeTruthy();
+    expect(parsed.arrangement?.positions).toStrictEqual([
+      { id: vertexIdWithWhitespace.trim(), x: 10, y: 20 },
+    ]);
   });
 
   it("should skip invalid RDF edge IDs", async () => {
