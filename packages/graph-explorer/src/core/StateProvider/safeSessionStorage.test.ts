@@ -20,14 +20,29 @@ describe("createInMemorySessionStorage", () => {
 });
 
 describe("resolveSessionStorage", () => {
-  // The default test environment is non-DOM, so globalThis.sessionStorage is
-  // undefined and resolveSessionStorage exercises the in-memory fallback.
   test("warns and falls back to in-memory storage when sessionStorage is unavailable", () => {
-    const storage = resolveSessionStorage();
+    const original = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "sessionStorage",
+    );
+    Object.defineProperty(globalThis, "sessionStorage", {
+      configurable: true,
+      value: undefined,
+    });
 
-    expect(vi.mocked(logger.warn)).toHaveBeenCalledOnce();
-    storage.setItem("key", "value");
-    expect(storage.getItem("key")).toBe("value");
+    try {
+      const storage = resolveSessionStorage();
+
+      expect(vi.mocked(logger.warn)).toHaveBeenCalledOnce();
+      storage.setItem("key", "value");
+      expect(storage.getItem("key")).toBe("value");
+    } finally {
+      if (original) {
+        Object.defineProperty(globalThis, "sessionStorage", original);
+      } else {
+        delete (globalThis as { sessionStorage?: Storage }).sessionStorage;
+      }
+    }
   });
 
   test("includes the thrown error in the warning when sessionStorage access throws", () => {
