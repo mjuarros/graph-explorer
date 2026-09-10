@@ -322,7 +322,7 @@ describe("edgeConnectionsQuery", () => {
         signal: abortController.signal,
         meta: { store, explorer },
       } as any),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/aborted/i);
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);
@@ -349,7 +349,7 @@ describe("edgeConnectionsQuery", () => {
       queryClient.fetchQuery(
         edgeConnectionsQuery(createSchemaWithEdges(edge.type)),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow("Connection failed");
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);
@@ -406,7 +406,7 @@ describe("edgeConnectionsQuery", () => {
       queryClient.fetchQuery(
         edgeConnectionsQuery(createSchemaWithEdges(edge.type)),
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow("Network error");
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);

@@ -40,6 +40,8 @@ export function VertexSymbol({ vertexStyle, className }: Props) {
   const shapeEl = renderShape(geometry, insetSize, transform);
 
   return (
+    // The role="img" is intentional for this SVG vector symbol.
+    /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <svg
       viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
       className={cn("size-9 shrink-0", className)}
@@ -66,7 +68,7 @@ export function VertexSymbol({ vertexStyle, className }: Props) {
           size={iconSize}
         />
       </g>
-    </svg>
+    </svg> /* eslint-enable jsx-a11y/prefer-tag-over-role */
   );
 }
 

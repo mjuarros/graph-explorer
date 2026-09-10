@@ -251,7 +251,7 @@ describe("neighborCounts", () => {
         { vertexIds: [createVertexId(createRandomUrlString())] },
         blankNodes,
       ),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/Validation error: /);
   });
 
   it("should handle vertices with no neighbors", async () => {

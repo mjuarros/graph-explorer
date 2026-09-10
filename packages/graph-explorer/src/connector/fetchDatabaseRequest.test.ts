@@ -460,7 +460,7 @@ describe("fetchDatabaseRequest", () => {
           method: "POST",
           signal: controller.signal,
         }),
-      ).rejects.toThrow();
+      ).rejects.toThrow(/aborted/i);
     });
 
     it("wraps other TypeErrors as ServerConnectionError", async () => {

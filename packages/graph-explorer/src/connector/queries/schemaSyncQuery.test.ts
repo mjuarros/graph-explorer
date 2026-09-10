@@ -291,7 +291,7 @@ describe("schemaSyncQuery", () => {
     // Cancel the query
     await queryClient.cancelQueries({ queryKey: ["schema"] });
 
-    await expect(queryPromise).rejects.toThrow();
+    await expect(queryPromise).rejects.toThrow(/CancelledError/);
   });
 
   it("should handle schema with multiple vertex and edge types", async () => {

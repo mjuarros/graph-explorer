@@ -71,6 +71,6 @@ describe("createServer", () => {
         certKeyPath: "/nonexistent/server.key",
         certPath: "/nonexistent/server.crt",
       }),
-    ).toThrow();
+    ).toThrow(/no such file or directory/);
   });
 });

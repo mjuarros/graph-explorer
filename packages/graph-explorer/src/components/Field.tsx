@@ -81,13 +81,15 @@ function Field({
   ...props
 }: ComponentPropsWithRef<"div"> & VariantProps<typeof fieldVariants>) {
   return (
+    // The role="group" is intentional for this composite field layout.
+    /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <div
       role="group"
       data-slot="field"
       data-orientation={orientation}
       className={cn(fieldVariants({ orientation }), className)}
       {...props}
-    />
+    /> /* eslint-enable jsx-a11y/prefer-tag-over-role */
   );
 }
 

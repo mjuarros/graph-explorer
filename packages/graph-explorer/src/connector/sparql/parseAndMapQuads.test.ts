@@ -29,7 +29,7 @@ describe("parseAndMapQuads", () => {
         invalidField: "not a valid SPARQL response",
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalledWith(
         "Failed to parse SPARQL JSON response",
         expect.any(String),
@@ -44,7 +44,7 @@ describe("parseAndMapQuads", () => {
         },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 
@@ -53,7 +53,7 @@ describe("parseAndMapQuads", () => {
         head: { vars: ["subject", "predicate", "object"] },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 
@@ -71,7 +71,7 @@ describe("parseAndMapQuads", () => {
         },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 
@@ -89,7 +89,7 @@ describe("parseAndMapQuads", () => {
         },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
     });
 
     it("should throw validation error for invalid predicate type", () => {
@@ -106,7 +106,7 @@ describe("parseAndMapQuads", () => {
         },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 
@@ -124,7 +124,7 @@ describe("parseAndMapQuads", () => {
         },
       };
 
-      expect(() => parseAndMapQuads(invalidData)).toThrow();
+      expect(() => parseAndMapQuads(invalidData)).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
   });
@@ -376,20 +376,24 @@ describe("parseAndMapQuads", () => {
 
   describe("edge cases", () => {
     it("should handle null data", () => {
-      expect(() => parseAndMapQuads(null)).toThrow();
+      expect(() => parseAndMapQuads(null)).toThrow(
+        new TypeError("Cannot read properties of null (reading 'code')"),
+      );
     });
 
     it("should handle undefined data", () => {
-      expect(() => parseAndMapQuads(undefined)).toThrow();
+      expect(() => parseAndMapQuads(undefined)).toThrow(
+        new TypeError("Cannot read properties of undefined (reading 'code')"),
+      );
     });
 
     it("should handle string data", () => {
-      expect(() => parseAndMapQuads("invalid")).toThrow();
+      expect(() => parseAndMapQuads("invalid")).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 
     it("should handle array data", () => {
-      expect(() => parseAndMapQuads([])).toThrow();
+      expect(() => parseAndMapQuads([])).toThrow(/Validation error: /);
       expect(logger.error).toHaveBeenCalled();
     });
 

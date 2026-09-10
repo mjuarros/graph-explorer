@@ -376,7 +376,7 @@ describe("parseExportedGraph", () => {
 
     await expect(
       parseExportedGraph(toGraphFileBlob(malformed)),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/"message": "Invalid input"/);
   });
 
   it("should reject a file that is not valid JSON", async () => {

@@ -153,7 +153,7 @@ describe("rawQuery", () => {
 
     await expect(
       rawQuery(mockFetch, { query: "SELECT ?name WHERE { ?s ?p ?name }" }),
-    ).rejects.toThrow();
+    ).rejects.toThrow(/Validation error: /);
   });
 
   it("should throw error when fetch returns error response", async () => {

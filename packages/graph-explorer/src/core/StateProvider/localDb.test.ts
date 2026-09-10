@@ -174,7 +174,9 @@ describe("exportFromLocalForage", () => {
     const serialized = serializeData(backupBefore);
     const blob = toJsonFileData(serialized);
 
-    await expect(() => readBackupDataFromFile(blob)).rejects.toThrowError();
+    await expect(() => readBackupDataFromFile(blob)).rejects.toThrowError(
+      /"path": \[\s*"backupSource"\s*\]/,
+    );
   });
 });
 

@@ -75,6 +75,8 @@ export function EdgePreview({
   );
 
   return (
+    // The role="img" is intentional for this SVG edge preview composite.
+    /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <div
       className={cn("flex w-full items-center", className)}
       role="img"
@@ -93,7 +95,7 @@ export function EdgePreview({
       </div>
 
       <VertexPlaceholder />
-    </div>
+    </div> /* eslint-enable jsx-a11y/prefer-tag-over-role */
   );
 }
 

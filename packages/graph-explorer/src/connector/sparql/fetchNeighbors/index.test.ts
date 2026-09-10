@@ -127,7 +127,9 @@ describe("fetchNeighbors", () => {
     mockSparqlFetch.mockResolvedValue(malformedResponse);
 
     // Act & Assert
-    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow();
+    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
+      /Validation error: /,
+    );
   });
 
   test("should throw validation error for missing required fields", async () => {
@@ -151,7 +153,9 @@ describe("fetchNeighbors", () => {
     mockSparqlFetch.mockResolvedValue(invalidResponse);
 
     // Act & Assert
-    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow();
+    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
+      /Validation error: /,
+    );
   });
 
   test("should throw validation error for response without head", async () => {
@@ -169,7 +173,9 @@ describe("fetchNeighbors", () => {
     mockSparqlFetch.mockResolvedValue(invalidResponse);
 
     // Act & Assert
-    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow();
+    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
+      /Validation error: /,
+    );
   });
 
   test("should throw validation error for response without results", async () => {
@@ -185,7 +191,9 @@ describe("fetchNeighbors", () => {
     mockSparqlFetch.mockResolvedValue(invalidResponse);
 
     // Act & Assert
-    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow();
+    await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
+      /Validation error: /,
+    );
   });
 
   test("should handle blank node vertices correctly", async () => {
