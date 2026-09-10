@@ -58,7 +58,7 @@ const parsedMetaSchema = z.object({
   version: versionSchema,
 });
 
-const fileEnvelopeSchema = z.object({
+export const fileEnvelopeSchema = z.object({
   meta: parsedMetaSchema,
   data: z.unknown(),
 });

@@ -11,6 +11,7 @@ import { toJsonFileData } from "@/utils/fileData";
 import {
   createRandomRawConfiguration,
   createRandomSchema,
+  expectZodErrorFor,
 } from "@/utils/testing";
 
 import type { SchemaStorageModel } from "./schema";
@@ -25,6 +26,7 @@ import {
   removeRestoredPrefix,
   renameEntry,
   restoreBackup,
+  SerializedBackupSchema,
 } from "./localDb";
 import { serializeData } from "./serializeData";
 
@@ -174,8 +176,8 @@ describe("exportFromLocalForage", () => {
     const serialized = serializeData(backupBefore);
     const blob = toJsonFileData(serialized);
 
-    await expect(() => readBackupDataFromFile(blob)).rejects.toThrowError(
-      /"path": \[\s*"backupSource"\s*\]/,
+    await expectZodErrorFor(SerializedBackupSchema, backupBefore, () =>
+      readBackupDataFromFile(blob),
     );
   });
 });

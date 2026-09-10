@@ -2,6 +2,7 @@ export {
   createFileEnvelope,
   type EnvelopeExpectation,
   type EnvelopeVersion,
+  fileEnvelopeSchema,
   FileEnvelopeError,
   parseFileEnvelope,
   type FileEnvelope,

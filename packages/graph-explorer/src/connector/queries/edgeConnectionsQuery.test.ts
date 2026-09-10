@@ -125,7 +125,7 @@ describe("edgeConnectionsQuery", () => {
       queryClient.fetchQuery(
         edgeConnectionsQuery(createSchemaWithEdges(createEdgeType("test"))),
       ),
-    ).rejects.toThrow("Network error");
+    ).rejects.toThrow(new Error("Network error"));
   });
 
   it("should return connections for multiple edge types", async () => {
@@ -322,7 +322,7 @@ describe("edgeConnectionsQuery", () => {
         signal: abortController.signal,
         meta: { store, explorer },
       } as any),
-    ).rejects.toThrow(/aborted/i);
+    ).rejects.toThrow(abortController.signal.reason);
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);
@@ -349,7 +349,7 @@ describe("edgeConnectionsQuery", () => {
       queryClient.fetchQuery(
         edgeConnectionsQuery(createSchemaWithEdges(edge.type)),
       ),
-    ).rejects.toThrow("Connection failed");
+    ).rejects.toThrow(new Error("Connection failed"));
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);
@@ -406,7 +406,7 @@ describe("edgeConnectionsQuery", () => {
       queryClient.fetchQuery(
         edgeConnectionsQuery(createSchemaWithEdges(edge.type)),
       ),
-    ).rejects.toThrow("Network error");
+    ).rejects.toThrow(new Error("Network error"));
 
     const schemaMap = store.get(schemaAtom);
     const activeSchema = schemaMap.get(state.activeConfig.id);

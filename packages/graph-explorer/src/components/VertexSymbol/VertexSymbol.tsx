@@ -40,7 +40,8 @@ export function VertexSymbol({ vertexStyle, className }: Props) {
   const shapeEl = renderShape(geometry, insetSize, transform);
 
   return (
-    // The role="img" is intentional for this SVG vector symbol.
+    // <svg> is the correct vector-graphics element; role="img" is the
+    // standard ARIA pattern for exposing it as an image to assistive tech.
     /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <svg
       viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}

@@ -6,6 +6,7 @@ import {
   createRandomUrlString,
 } from "@shared/utils/testing";
 import { describe, expect, it, vi } from "vitest";
+import { z } from "zod";
 
 import {
   createResultBundle,
@@ -19,9 +20,11 @@ import {
   createTestableEdge,
   createTestableVertex,
   createUriValue,
+  validationErrorFor,
 } from "@/utils/testing";
 
 import { rawQuery } from "./rawquery";
+import { sparqlResponseSchema, sparqlValueSchema } from "./types";
 
 describe("rawQuery", () => {
   it("should return empty array for empty query", async () => {
@@ -153,7 +156,12 @@ describe("rawQuery", () => {
 
     await expect(
       rawQuery(mockFetch, { query: "SELECT ?name WHERE { ?s ?p ?name }" }),
-    ).rejects.toThrow(/Validation error: /);
+    ).rejects.toThrow(
+      validationErrorFor(
+        sparqlResponseSchema(z.record(z.string(), sparqlValueSchema)),
+        mockResponse,
+      ),
+    );
   });
 
   it("should throw error when fetch returns error response", async () => {
@@ -165,7 +173,7 @@ describe("rawQuery", () => {
 
     await expect(
       rawQuery(mockFetch, { query: "INVALID QUERY" }),
-    ).rejects.toThrow("Invalid query syntax");
+    ).rejects.toThrow(new Error("Invalid query syntax"));
   });
 
   describe("CONSTRUCT/DESCRIBE queries", () => {

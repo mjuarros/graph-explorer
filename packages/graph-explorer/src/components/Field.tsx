@@ -81,7 +81,8 @@ function Field({
   ...props
 }: ComponentPropsWithRef<"div"> & VariantProps<typeof fieldVariants>) {
   return (
-    // The role="group" is intentional for this composite field layout.
+    // Field is a composite layout wrapper, not a <fieldset>; the div carries
+    // role="group" so screen readers expose the related label/control cluster.
     /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <div
       role="group"

@@ -7,10 +7,12 @@ import {
   createQuadSparqlResponse,
   createTestableEdge,
   createTestableVertex,
+  validationErrorFor,
 } from "@/utils/testing";
 
 import type { SPARQLNeighborsRequest } from "../types";
 
+import { sparqlQuadBindingSchema, sparqlResponseSchema } from "../types";
 import fetchNeighbors from "./index";
 
 describe("fetchNeighbors", () => {
@@ -128,7 +130,10 @@ describe("fetchNeighbors", () => {
 
     // Act & Assert
     await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
-      /Validation error: /,
+      validationErrorFor(
+        sparqlResponseSchema(sparqlQuadBindingSchema),
+        malformedResponse,
+      ),
     );
   });
 
@@ -154,7 +159,10 @@ describe("fetchNeighbors", () => {
 
     // Act & Assert
     await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
-      /Validation error: /,
+      validationErrorFor(
+        sparqlResponseSchema(sparqlQuadBindingSchema),
+        invalidResponse,
+      ),
     );
   });
 
@@ -174,7 +182,10 @@ describe("fetchNeighbors", () => {
 
     // Act & Assert
     await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
-      /Validation error: /,
+      validationErrorFor(
+        sparqlResponseSchema(sparqlQuadBindingSchema),
+        invalidResponse,
+      ),
     );
   });
 
@@ -192,7 +203,10 @@ describe("fetchNeighbors", () => {
 
     // Act & Assert
     await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
-      /Validation error: /,
+      validationErrorFor(
+        sparqlResponseSchema(sparqlQuadBindingSchema),
+        invalidResponse,
+      ),
     );
   });
 
@@ -261,7 +275,7 @@ describe("fetchNeighbors", () => {
 
     // Act & Assert
     await expect(fetchNeighbors(mockSparqlFetch, request)).rejects.toThrow(
-      "Network error",
+      new Error("Network error"),
     );
   });
 

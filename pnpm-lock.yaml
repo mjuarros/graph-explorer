@@ -253,7 +253,7 @@ importers:
         specifier: ^17.0.7
         version: 17.0.7
       oxfmt:
-        specifier: ^0.67.0
+        specifier: 0.67.0
         version: 0.67.0
       oxlint:
         specifier: 1.82.0

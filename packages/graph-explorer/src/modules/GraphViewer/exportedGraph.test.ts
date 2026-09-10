@@ -8,6 +8,8 @@ import {
 
 import type { EdgeId, VertexId } from "@/core";
 
+import { FileEnvelopeError, fileEnvelopeSchema } from "@/core/fileEnvelope";
+import { expectZodErrorFor } from "@/utils/testing";
 import {
   createRandomConnectionWithId,
   createRandomEdgeId,
@@ -22,6 +24,7 @@ import {
   createExportedConnection,
   createExportedGraph,
   createFileSafeTimestamp,
+  graphExportPayloadSchema,
   type ExportedGraphConnection,
   type ExportedGraphFile,
   isMatchingConnection,
@@ -316,7 +319,11 @@ describe("parseExportedGraph", () => {
 
     await expect(
       parseExportedGraph(toGraphFileBlob(wrongKind)),
-    ).rejects.toThrow(/Expected a "graph-export" file/);
+    ).rejects.toThrow(
+      new FileEnvelopeError(
+        'Expected a "graph-export" file, but got "styling-export"',
+      ),
+    );
   });
 
   it("should reject a file from a newer generation", async () => {
@@ -327,7 +334,9 @@ describe("parseExportedGraph", () => {
     };
 
     await expect(parseExportedGraph(toGraphFileBlob(tooNew))).rejects.toThrow(
-      /newer version of Graph Explorer/,
+      new FileEnvelopeError(
+        "This file was created by a newer version of Graph Explorer and cannot be imported. Update Graph Explorer and try again.",
+      ),
     );
   });
 
@@ -338,9 +347,15 @@ describe("parseExportedGraph", () => {
       meta: { ...exportedGraph.meta, version: "1.5" },
     };
 
+    const { issues } = fileEnvelopeSchema.safeParse(malformed).error!;
     await expect(
       parseExportedGraph(toGraphFileBlob(malformed)),
-    ).rejects.toThrow(/expected envelope structure/);
+    ).rejects.toThrow(
+      new FileEnvelopeError(
+        "File does not have the expected envelope structure",
+        issues,
+      ),
+    );
   });
 
   it("should accept the legacy '1.0' version string", async () => {
@@ -364,7 +379,9 @@ describe("parseExportedGraph", () => {
     const exportedGraph = createRandomExportedGraph();
     expect(() =>
       parseGraphExportPayloadForVersion(2, exportedGraph.data),
-    ).toThrow(/No graph export parser for format generation 2/);
+    ).toThrow(
+      new FileEnvelopeError("No graph export parser for format generation 2"),
+    );
   });
 
   it("should reject a malformed payload", async () => {
@@ -374,15 +391,15 @@ describe("parseExportedGraph", () => {
       data: { ...exportedGraph.data, vertices: [false, true] as any },
     };
 
-    await expect(
+    await expectZodErrorFor(graphExportPayloadSchema, malformed.data, () =>
       parseExportedGraph(toGraphFileBlob(malformed)),
-    ).rejects.toThrow(/"message": "Invalid input"/);
+    );
   });
 
   it("should reject a file that is not valid JSON", async () => {
     const blob = new Blob(["not json"], { type: "application/json" });
     await expect(parseExportedGraph(blob)).rejects.toThrow(
-      "File is not valid JSON",
+      new FileEnvelopeError("File is not valid JSON"),
     );
   });
 });

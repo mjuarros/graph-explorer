@@ -75,7 +75,8 @@ export function EdgePreview({
   );
 
   return (
-    // The role="img" is intentional for this SVG edge preview composite.
+    // The preview is a composite of SVG arrows and a label; it cannot be an
+    // <img> because it has children, so the div carries role="img" instead.
     /* eslint-disable jsx-a11y/prefer-tag-over-role */
     <div
       className={cn("flex w-full items-center", className)}

@@ -3,6 +3,7 @@ import {
   createRandomName,
   createRandomUrlString,
 } from "@shared/utils/testing";
+import { z } from "zod";
 
 import { createVertexId, createVertexType, type VertexType } from "@/core";
 import {
@@ -14,12 +15,18 @@ import {
   createTestableEdge,
   createTestableVertex,
   createUriValue,
+  validationErrorFor,
 } from "@/utils/testing";
 
 import type { NeighborCount } from "../useGEFetchTypes";
 import type { BlankNodesMap } from "./types";
 
 import { neighborCounts } from "./neighborCounts";
+import {
+  sparqlNumberValueSchema,
+  sparqlResourceValueSchema,
+  sparqlResponseSchema,
+} from "./types";
 
 describe("neighborCounts", () => {
   it("should return empty for an empty request", async () => {
@@ -222,24 +229,25 @@ describe("neighborCounts", () => {
         { vertexIds: [createVertexId(createRandomUrlString())] },
         blankNodes,
       ),
-    ).rejects.toThrow("Total neighbor count request failed");
+    ).rejects.toThrow(new Error("Total neighbor count request failed"));
   });
 
   it("should handle malformed response for total counts", async () => {
     const blankNodes: BlankNodesMap = new Map();
+    const invalidTotalCountResponse = {
+      head: { vars: ["resource", "totalCount"] },
+      results: {
+        bindings: [
+          {
+            resource: createUriValue("invalid"),
+            totalCount: { type: "invalid", value: "not-a-number" },
+          },
+        ],
+      },
+    };
     const mockFetch = vi
       .fn()
-      .mockResolvedValueOnce({
-        head: { vars: ["resource", "totalCount"] },
-        results: {
-          bindings: [
-            {
-              resource: createUriValue("invalid"),
-              totalCount: { type: "invalid", value: "not-a-number" },
-            },
-          ],
-        },
-      })
+      .mockResolvedValueOnce(invalidTotalCountResponse)
       .mockResolvedValueOnce({
         head: { vars: ["resource", "type", "typeCount"] },
         results: { bindings: [] },
@@ -251,7 +259,17 @@ describe("neighborCounts", () => {
         { vertexIds: [createVertexId(createRandomUrlString())] },
         blankNodes,
       ),
-    ).rejects.toThrow(/Validation error: /);
+    ).rejects.toThrow(
+      validationErrorFor(
+        sparqlResponseSchema(
+          z.object({
+            resource: sparqlResourceValueSchema,
+            totalCount: sparqlNumberValueSchema,
+          }),
+        ),
+        invalidTotalCountResponse,
+      ),
+    );
   });
 
   it("should handle vertices with no neighbors", async () => {
@@ -348,7 +366,7 @@ describe("neighborCounts", () => {
 
     await expect(
       neighborCounts(mockFetch, { vertexIds: [vertex.id] }, blankNodes),
-    ).rejects.toThrow("Network error");
+    ).rejects.toThrow(new Error("Network error"));
   });
 });
 
