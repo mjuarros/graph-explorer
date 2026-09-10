@@ -21,28 +21,13 @@ describe("createInMemorySessionStorage", () => {
 
 describe("resolveSessionStorage", () => {
   test("warns and falls back to in-memory storage when sessionStorage is unavailable", () => {
-    const original = Object.getOwnPropertyDescriptor(
-      globalThis,
-      "sessionStorage",
-    );
-    Object.defineProperty(globalThis, "sessionStorage", {
-      configurable: true,
-      value: undefined,
-    });
+    vi.stubGlobal("sessionStorage", undefined);
 
-    try {
-      const storage = resolveSessionStorage();
+    const storage = resolveSessionStorage();
 
-      expect(vi.mocked(logger.warn)).toHaveBeenCalledOnce();
-      storage.setItem("key", "value");
-      expect(storage.getItem("key")).toBe("value");
-    } finally {
-      if (original) {
-        Object.defineProperty(globalThis, "sessionStorage", original);
-      } else {
-        delete (globalThis as { sessionStorage?: Storage }).sessionStorage;
-      }
-    }
+    expect(vi.mocked(logger.warn)).toHaveBeenCalledOnce();
+    storage.setItem("key", "value");
+    expect(storage.getItem("key")).toBe("value");
   });
 
   test("includes the thrown error in the warning when sessionStorage access throws", () => {
