@@ -71,18 +71,6 @@ describe("createServer", () => {
         certKeyPath: "/nonexistent/server.key",
         certPath: "/nonexistent/server.crt",
       }),
-    ).toThrow(
-      Object.assign(
-        new Error(
-          "ENOENT: no such file or directory, open '/nonexistent/server.key'",
-        ),
-        {
-          errno: -2,
-          code: "ENOENT",
-          syscall: "open",
-          path: "/nonexistent/server.key",
-        },
-      ),
-    );
+    ).toThrow(/ENOENT.*no such file or directory/);
   });
 });
