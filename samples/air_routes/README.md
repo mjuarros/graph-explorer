@@ -37,4 +37,17 @@ This sample uses Gremlin Server 3.8 as the database pre-loaded with the [air rou
    ```
 4. Open the browser and navigate to: [http://localhost:8080/explorer](http://localhost:8080/explorer)
 
+## Loading the sample styles
+
+1. Launch the sample and open [http://localhost:8080/explorer](http://localhost:8080/explorer).
+2. Open **Settings** from the top navigation bar.
+3. Go to the **Styles** page.
+4. Click **Load styles**.
+5. Select the `samples/air_routes/styles.json` file from this repository on your machine.
+6. In the selective import modal, keep all five styles selected (or pick only the ones you want), then click **Load selected**.
+7. Return to the **Graph** or **Schema** view. Airports, countries, and continents now render with distinct shapes, colors, and icons; routes and contains edges also have distinct line styles.
+
+> [!NOTE]
+> The browser file picker reads from your host filesystem, not the Docker container. No volume mount is needed — just ensure `styles.json` is available on your machine before loading it.
+
 Once it is running, the [Getting Started tutorial](../../docs/getting-started/README.md) walks you through exploring the air routes data step by step.
