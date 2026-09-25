@@ -23,7 +23,7 @@
     "clean:dep": "rm -rf node_modules && pnpm -r exec rm -rf node_modules",
     "build": "pnpm --stream -r run build",
     "dev": "pnpm --stream -r run dev",
-    "connections:prototype": "pnpm --filter graph-explorer run dev"
+    "connections:prototype": "pnpm --filter \"./packages/graph-explorer\" run dev"
   },
   "dependencies": {},
   "devDependencies": {
