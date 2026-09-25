@@ -1,7 +1,10 @@
+import { useSearchParams } from "react-router";
+
 import {
   NavBar,
   NavBarContent,
   NavBarTitle,
+  NotInProduction,
   Panel,
   PanelContent,
   PanelEmptyState,
@@ -15,11 +18,16 @@ import GraphExplorerIcon from "@/components/icons/GraphExplorerIcon";
 import { useConfiguration } from "@/core";
 import { useIsSyncing } from "@/hooks/useSchemaSync";
 import AvailableConnections from "@/modules/AvailableConnections";
+// PROTOTYPE (#1327) — throwaway; remove with the connectionValidationPrototype directory.
+import { ConnectionValidationPrototype } from "@/modules/AvailableConnections/connectionValidationPrototype";
 import ConnectionDetail from "@/modules/ConnectionDetail";
 
 export default function Connections() {
   const config = useConfiguration();
   const isSyncing = useIsSyncing();
+  const [searchParams] = useSearchParams();
+  const showPrototype =
+    searchParams.get("prototype") === "connection-validation";
 
   return (
     <Workspace>
@@ -34,18 +42,24 @@ export default function Connections() {
         <RouteButtonGroup active="connections" />
       </NavBar>
       <WorkspaceContent>
-        <PanelGroup className="grid grid-cols-2 gap-2">
-          <div className="h-full grow">
-            <AvailableConnections isSync={isSyncing} />
-          </div>
-          {config ? (
+        {showPrototype ? (
+          <NotInProduction>
+            <ConnectionValidationPrototype />
+          </NotInProduction>
+        ) : (
+          <PanelGroup className="grid grid-cols-2 gap-2">
             <div className="h-full grow">
-              <ConnectionDetail config={config} />
+              <AvailableConnections isSync={isSyncing} />
             </div>
-          ) : (
-            <NoActiveConnectionPanel />
-          )}
-        </PanelGroup>
+            {config ? (
+              <div className="h-full grow">
+                <ConnectionDetail config={config} />
+              </div>
+            ) : (
+              <NoActiveConnectionPanel />
+            )}
+          </PanelGroup>
+        )}
       </WorkspaceContent>
     </Workspace>
   );
