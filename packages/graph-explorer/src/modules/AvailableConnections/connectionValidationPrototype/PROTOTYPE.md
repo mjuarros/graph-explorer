@@ -13,10 +13,11 @@ fold the winning direction into the real form/list, then delete this directory.
 pnpm connections:prototype
 ```
 
-That's just `pnpm dev`. Then open:
+That's `pnpm dev` for the web app only. Then open (note the `#/` — the app uses a
+**hash router**, so the route and query live after the `#`):
 
 ```
-http://localhost:5173/connections?prototype=connection-validation&variant=A
+http://localhost:5174/#/connections?prototype=connection-validation&variant=A
 ```
 
 Flip variants with the floating bar at the bottom of the screen, or the `←` / `→`
